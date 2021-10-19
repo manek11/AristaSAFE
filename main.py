@@ -1,7 +1,7 @@
 '''
 
 Author: Manek Gujral 
-Created: 28 Sep, 2021
+Created: 19 Oct, 2021
 
 Steps:
 1) Import needed libs
@@ -14,11 +14,6 @@ Steps:
 8)              -> if YES: delete row
 
 '''
-
-# duplicate entry counter
-# add check to ensure that correct num of devices
-# 1 to 1 mapping
-# issue column 
 
 import csv
 
