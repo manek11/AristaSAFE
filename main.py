@@ -15,15 +15,26 @@ Steps:
 
 '''
 
+# usage: python3 main.py <filename.csv>
+# default assumes file called summary.csv : python3 main.py
+
 import csv
+import sys
+
+# checking for filename 
+if(len(sys.argv) > 1):
+    filename = sys.argv[1] 
+    output_filename = filename[0:-4] + '_edit.csv'
+else:
+    filename = 'summary.csv'
+    output_filename = 'summary_edit.csv'
 
 unique_arr = [[]]
 
-with open('summary.csv', 'r') as f, open('summary_edit.csv', 'w') as nf:
+with open(filename, 'r') as f, open(output_filename, 'w') as nf:
     reader = csv.reader(f)
     writer = csv.writer(nf)
     for row in reader:
-        print(row)
         if (row[1], row[3]) not in unique_arr:
             unique_arr.append((row[1], row[3]))
             writer.writerow(row)
