@@ -112,25 +112,6 @@ for i in range(len(new_file_data)):
 
 print("Total entrires: " + str(sum))    
 
-print("--------Analyzing Data Centers with errors--------")
-print()
-
-multiple_cases_flag = False
-
-for i in range(len(new_file_data)):
-    if i!=0:
-        dc_1 =  datacenter_name(new_file_data[i][1])
-    for j in range(len(new_file_data)):
-        if i!=0 and j!=0 and i!=j:
-            dc_2 =  datacenter_name(new_file_data[j][1])
-            if dc_1 == dc_2 and dc_1 not in event_analyzer:
-                event_analyzer.append(dc_2)
-                print("Multiple errors observed in datacenter: " + dc_1 + " starting at row " + str(i+1) + " in the file " + output_filename)
-                break
-
-print("--------Analysis Complete--------")
-print()
-
 '''
 Changes:
 1) Make a new excel sheet for duplicate cases only
@@ -162,14 +143,35 @@ elif flag == '-sorted':
         if new_file_data[i] not in sorted_events:
             sorted_events.append(new_file_data[i])
         for j in range(len(new_file_data)):
-            if i!=j and i!=1 and j!=1:
+            if i!=j and i!=0 and j!=0:
                 if new_file_data[i][3] == new_file_data[j][3]:
                     if new_file_data[j] not in sorted_events:
                         sorted_events.append(new_file_data[j])
 
     with open(sorted_events_filename, 'w') as nf:
         writer = csv.writer(nf)
-        writer.writerows(sorted_events)            
+        writer.writerows(sorted_events)         
+
+    print("--------Analyzing Data Centers with errors--------")
+    print()
+
+    multiple_cases_flag = False
+
+    for i in range(len(sorted_events)):
+        if i!=0:
+            dc_1 =  datacenter_name((sorted_events[i][1]))
+            event_1 = sorted_events[i][3]
+            for j in range(len(sorted_events)):
+                if i!=0 and j!=0 and i!=j:
+                    dc_2 =  datacenter_name(sorted_events[j][1])
+                    event_2 = sorted_events[j][3]
+                    if dc_1 == dc_2 and event_1 == event_2 and (dc_2, event_2) not in event_analyzer :
+                        event_analyzer.append((dc_2, event_2))
+                        print("Multiple devices encountering same error observed in datacenter: " + dc_2 + " starting at row " + str(j) + " in the file " + sorted_events_filename)
+                        break
+
+    print("--------Analysis Complete--------")
+    print()
 
 else:
     if os.path.exists(duplicate_events_filename):
@@ -178,5 +180,4 @@ else:
     if os.path.exists(sorted_events_filename):
         os.remove(sorted_events_filename)        
 
-# terminal prompts
 
