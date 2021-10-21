@@ -1,0 +1,16 @@
+﻿TIMESTAMP,DeviceName,Message,Event
+10:00,A,vrf_error,vrf_error
+11:00,A,pid_error,pid_error
+12:00,B,vrf_MGMT_error,vrf_MGMT_error
+13:00,B,vrf_MGMT_error,vrf_MGMT_error
+14:00,B,vrf_MGMT_error,vrf_MGMT_error
+15:00,C,pid_error,pid_error
+16:00,D,e1,e1
+17:00,D,e2,e2
+18:00,D,e1,e1
+19:00,D,e2,e2
+20:00,D,e1,e1
+,,,
+,,,
+,,,
+,,,
