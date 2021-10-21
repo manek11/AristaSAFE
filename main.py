@@ -17,11 +17,15 @@ Steps:
 
 # usage: python3 main.py <filename.csv> -duplicate or -sorted
 # default assumes file called summary.csv : python3 main.py
+# install alive_progress lib
 
 import csv
 import os
 from os import dup, read
 import sys
+from alive_progress import alive_bar
+from time import sleep
+
 
 def datacenter_name(device):
     datacenter = ''
@@ -66,52 +70,68 @@ column_count = "Number of Occurences"
 column_start = "First Occurence"
 column_end = "Last Occurence"
 
+total_rows = 0
+
+with open(filename, 'r') as f:
+    reader = csv.reader(f)
+    total_rows = len(list(reader))
+
+print('-----Duplicates being removed-----')
+print()
 # duplicate check
 with open(filename, 'r') as f, open(output_filename, 'w') as nf:
     reader = csv.reader(f)
     writer = csv.writer(nf)
 
-    for row in reader:
+    with alive_bar(total_rows) as bar:  
 
-        if (row[1], row[3]) not in unique_arr:
-            unique_arr.append((row[1], row[3]))
-            counter_arr.append(1)
+        for row in reader:
 
-            if(reader.line_num == 1):
-                row.append(column_count)
-                row.append(column_start)
-                row.append(column_end)
+            if (row[1], row[3]) not in unique_arr:
+                unique_arr.append((row[1], row[3]))
+                counter_arr.append(1)
+
+                if(reader.line_num == 1):
+                    row.append(column_count)
+                    row.append(column_start)
+                    row.append(column_end)
+
+                else:
+                    row.append(str(1))
+                    row.append(row[0])
+                    row.append(row[0])
+            
+                new_file_data.append(row)    
 
             else:
-                row.append(str(1))
-                row.append(row[0])
-                row.append(row[0])
-          
-            new_file_data.append(row)    
+                idx = [index for index in range(len(unique_arr)) if unique_arr[index] == (row[1], row[3])]
+                counter_arr[idx[0]] += 1
+                curr_row_timestamp = row[0]
+                old_row_first_timestamp = new_file_data[idx[0]][5]
+                old_row_last_timestamp = new_file_data[idx[0]][6]
+                new_file_data[idx[0]][4] = str(counter_arr[idx[0]])
 
-        else:
-            idx = [index for index in range(len(unique_arr)) if unique_arr[index] == (row[1], row[3])]
-            counter_arr[idx[0]] += 1
-            curr_row_timestamp = row[0]
-            old_row_first_timestamp = new_file_data[idx[0]][5]
-            old_row_last_timestamp = new_file_data[idx[0]][6]
-            new_file_data[idx[0]][4] = str(counter_arr[idx[0]])
+                if curr_row_timestamp > old_row_last_timestamp:
+                    new_file_data[idx[0]][6] = curr_row_timestamp
+                    
+                elif curr_row_timestamp < old_row_first_timestamp:
+                    new_file_data[idx[0]][5] = curr_row_timestamp
+                    
+            sleep(0.00000000001)        
+            bar()
 
-            if curr_row_timestamp > old_row_last_timestamp:
-                new_file_data[idx[0]][6] = curr_row_timestamp
-                
-            elif curr_row_timestamp < old_row_first_timestamp:
-                new_file_data[idx[0]][5] = curr_row_timestamp
-            
     writer.writerows(new_file_data)
+
+print()
+print('-----Duplicates removed-----')
+print()
 
 sum = 0
 for i in range(len(new_file_data)):
     if (i != 0):
         sum+=int(new_file_data[i][4])
-
-print("Total entrires: " + str(sum))    
-
+print("Total entries: " + str(sum))    
+print()
 '''
 Changes:
 1) Make a new excel sheet for duplicate cases only
@@ -120,10 +140,20 @@ Changes:
 
 if flag == '-duplicate':
     # make a new exceel file for duplicate events only
-    for i in range(len(new_file_data)):
-        if (i != 0):
-            if (int(new_file_data[i][4]) > 1):
-                duplicates_data.append(new_file_data[i])
+    # for i in range(len(new_file_data)):
+    #     if (i != 0):
+    #         if (int(new_file_data[i][4]) > 1):
+    #             duplicates_data.append(new_file_data[i])
+    print('-----Duplicates being written-----')
+    print()
+    with alive_bar(len(new_file_data)) as bar:  
+        for i in range(len(new_file_data)):
+            if (i != 0):
+                if (int(new_file_data[i][4]) > 1):
+                    duplicates_data.append(new_file_data[i])
+            sleep(0.01)        
+            bar()     
+    print()        
 
     with open(duplicate_events_filename, 'w') as nf:
         writer = csv.writer(nf)
@@ -136,17 +166,24 @@ if flag == '-duplicate':
 
     print("Total duplicates entries: " + str(dup_sum))  
     print("Total single entries: " + str(int(sum - dup_sum)))  
+    print()
 
 elif flag == '-sorted':
 
-    for i in range(len(new_file_data)):
-        if new_file_data[i] not in sorted_events:
-            sorted_events.append(new_file_data[i])
-        for j in range(len(new_file_data)):
-            if i!=j and i!=0 and j!=0:
-                if new_file_data[i][3] == new_file_data[j][3]:
-                    if new_file_data[j] not in sorted_events:
-                        sorted_events.append(new_file_data[j])
+    print('-----Sorting based on events-----')
+    print()
+    with alive_bar(len(new_file_data)) as bar:  
+        for i in range(len(new_file_data)):
+            if new_file_data[i] not in sorted_events:
+                sorted_events.append(new_file_data[i])
+            for j in range(len(new_file_data)):
+                if i!=j and i!=0 and j!=0:
+                    if new_file_data[i][3] == new_file_data[j][3]:
+                        if new_file_data[j] not in sorted_events:
+                            sorted_events.append(new_file_data[j])
+            sleep(0.01)        
+            bar()     
+    print()  
 
     with open(sorted_events_filename, 'w') as nf:
         writer = csv.writer(nf)
@@ -179,5 +216,4 @@ else:
 
     if os.path.exists(sorted_events_filename):
         os.remove(sorted_events_filename)        
-
 
