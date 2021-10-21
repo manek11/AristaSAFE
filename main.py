@@ -132,11 +132,13 @@ if flag == '-duplicate':
 elif flag == '-sorted':
 
     for i in range(len(new_file_data)):
-        sorted_events.append(new_file_data[i])
+        if new_file_data[i] not in sorted_events:
+            sorted_events.append(new_file_data[i])
         for j in range(len(new_file_data)):
             if i!=j and i!=1 and j!=1:
                 if new_file_data[i][3] == new_file_data[j][3]:
-                    sorted_events.append(new_file_data[j])
+                    if new_file_data[j] not in sorted_events:
+                        sorted_events.append(new_file_data[j])
 
     with open(sorted_events_filename, 'w') as nf:
         writer = csv.writer(nf)
