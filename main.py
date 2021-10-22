@@ -17,7 +17,6 @@ Steps:
 
 # usage: python3 main.py <filename.csv> -duplicate or -sorted
 # default assumes file called summary.csv : python3 main.py
-# install alive_progress lib
 
 import csv
 import os
@@ -76,6 +75,7 @@ with open(filename, 'r') as f:
     reader = csv.reader(f)
     total_rows = len(list(reader))
 
+print()
 print('-----Duplicates being removed-----')
 print()
 # duplicate check
@@ -206,7 +206,8 @@ elif flag == '-sorted':
                         event_analyzer.append((dc_2, event_2))
                         print("Multiple devices encountering same error observed in datacenter: " + dc_2 + " starting at row " + str(j) + " in the file " + sorted_events_filename)
                         break
-
+    
+    print()
     print("--------Analysis Complete--------")
     print()
 
