@@ -139,11 +139,6 @@ Changes:
 '''
 
 if flag == '-duplicate':
-    # make a new exceel file for duplicate events only
-    # for i in range(len(new_file_data)):
-    #     if (i != 0):
-    #         if (int(new_file_data[i][4]) > 1):
-    #             duplicates_data.append(new_file_data[i])
     print('-----Duplicates being written-----')
     print()
     with alive_bar(len(new_file_data)) as bar:  
@@ -169,7 +164,6 @@ if flag == '-duplicate':
     print()
 
 elif flag == '-sorted':
-
     print('-----Sorting based on events-----')
     print()
     with alive_bar(len(new_file_data)) as bar:  
@@ -184,6 +178,7 @@ elif flag == '-sorted':
             sleep(0.01)        
             bar()     
     print()  
+    print('-----Entries sorted-----')
 
     with open(sorted_events_filename, 'w') as nf:
         writer = csv.writer(nf)
@@ -191,8 +186,6 @@ elif flag == '-sorted':
 
     print("--------Analyzing Data Centers with errors--------")
     print()
-
-    multiple_cases_flag = False
 
     for i in range(len(sorted_events)):
         if i!=0:
