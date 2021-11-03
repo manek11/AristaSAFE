@@ -28,8 +28,8 @@ from time import sleep
 
 def datacenter_name(device):
     datacenter = ''
-    for char in device[0:5]:
-        if not char.isdigit():
+    for char in device[0:4]:
+        if not char == '-' and not char.isdigit():
             datacenter += char
     return datacenter
 
@@ -43,6 +43,10 @@ def main():
     sorted_events = []
     event_analyzer = []
 
+
+    # # new array for dc
+    # datacenter_report = []
+    # datacenter_report.append(('Datacenter', 'Devices', 'Event'))
 
     # initialize new columns
     column_count = "Number of Occurences"
@@ -143,6 +147,7 @@ def main():
         print("Total single entries: " + str(int(sum - dup_sum)))  
         print()
 
+
     elif flag == '-sorted':
         print('-----Sorting based on events-----')
         print()
@@ -164,26 +169,73 @@ def main():
             writer = csv.writer(nf)
             writer.writerows(sorted_events)         
 
+        print()
         print("--------Analyzing Data Centers with errors--------")
         print()
 
-        for i in range(len(sorted_events)):
-            if i!=0:
-                dc_1 =  datacenter_name((sorted_events[i][1]))
-                event_1 = sorted_events[i][3]
-                for j in range(len(sorted_events)):
-                    if i!=0 and j!=0 and i!=j:
-                        dc_2 =  datacenter_name(sorted_events[j][1])
-                        event_2 = sorted_events[j][3]
-                        if dc_1 == dc_2 and event_1 == event_2 and (dc_2, event_2) not in event_analyzer :
-                            event_analyzer.append((dc_2, event_2))
-                            print("Multiple devices encountering same error observed in datacenter: " + dc_2 + " starting at row " + str(j) + " in the file " + sorted_events_filename)
-                            break
-        
+        with alive_bar(len(sorted_events)) as bar:  
+
+            for i in range(len(sorted_events)):
+
+                if i!=0:
+                    dc_1 =  datacenter_name((sorted_events[i][1]))
+                    event_1 = sorted_events[i][3]
+                    device_1 = sorted_events[i][1]
+                
+                    for j in range(len(sorted_events)):
+                
+                        if i!=0 and j!=0 and i!=j:
+                            dc_2 =  datacenter_name(sorted_events[j][1])
+                            event_2 = sorted_events[j][3]
+                            device_2 = sorted_events[j][1]
+                
+                            if dc_1 == dc_2 and event_1 == event_2 and (dc_2, device_2, event_2) not in event_analyzer:
+                                
+                                if ((dc_1, device_1, event_1)) not in event_analyzer:
+                                    event_analyzer.append((dc_1, device_1, event_1))
+
+                                event_analyzer.append((dc_2, device_2, event_2))
+                                # print()
+                                # print("Multiple devices encountering same error observed in datacenter: " + dc_2 + " starting at row " + str(j) + " in the file " + sorted_events_filename)
+                                # print(event_2)
+                                # print()
+
+                sleep(0.01)        
+                bar() 
+
+        current_dc = ''
+        current_device = ''
+        current_event = ''
+
+        with open(dc_filename, mode='w') as csv_file:
+            fieldnames = ['DataCenter', 'DeviceName', 'Event']
+            writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+
+            writer.writeheader()
+
+            for i in range(len(event_analyzer)):
+                
+                if current_dc != event_analyzer[i][0]:
+
+                    current_dc = event_analyzer[i][0]
+                    current_device = event_analyzer[i][1]
+                    current_event = event_analyzer[i][2]
+                    
+                    if i!=0:
+                        writer.writerow({'DataCenter': '', 'DeviceName': '', 'Event': ''})       
+
+                    writer.writerow({'DataCenter': event_analyzer[i][0], 'DeviceName': event_analyzer[i][1], 'Event': event_analyzer[i][2]})
+                
+                else:
+                    writer.writerow({'DataCenter': '', 'DeviceName': event_analyzer[i][1], 'Event': ''})
+
+
         print()
         print("--------Analysis Complete--------")
         print()
 
+
+        
     else:
         if os.path.exists(duplicate_events_filename):
             os.remove(duplicate_events_filename)
@@ -199,6 +251,7 @@ if(len(sys.argv) > 2):
     output_filename = filename[0:-4] + '_edit.csv'
     duplicate_events_filename = filename[0:-4] + '_duplicate_events.csv'
     sorted_events_filename = filename[0:-4] + '_sorted_events.csv'
+    dc_filename = filename[0:-4] + '_dc_report.csv'
     flag = sys.argv[2]
 
 elif(len(sys.argv) > 1):
@@ -207,6 +260,7 @@ elif(len(sys.argv) > 1):
         output_filename = filename[0:-4] + '_edit.csv'
         duplicate_events_filename = filename[0:-4] + '_duplicate_events.csv'
         sorted_events_filename = filename[0:-4] + '_sorted_events.csv'
+        dc_filename = filename[0:-4] + '_dc_report.csv'
         flag = '-none'
     else:
         help = True    
@@ -215,7 +269,8 @@ else:
     filename = 'summary.csv'
     output_filename = 'summary_edit.csv'
     duplicate_events_filename = 'summary_duplicate_events.csv'
-    sorted_events_filename = filename[0:-4] + 'summary_sorted_events.csv'
+    sorted_events_filename = 'summary_sorted_events.csv'
+    dc_filename = 'summary_dc_report.csv'
     flag = '-none'
 
 if help == True:
